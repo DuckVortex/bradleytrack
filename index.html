@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+  <div class="container">
+    <video class="input_video" style="display:none;"></video>
+    <canvas class="output_canvas" width="1280px" height="720px"></canvas>
+    <div style="display:none;">
+      <img id="source1" src="https://raw.githubusercontent.com/Mike1795/BabylonStuff/main/textures/bradley.png" width="300" height="227" />
+      <img id="source2" src="https://raw.githubusercontent.com/Mike1795/BabylonStuff/main/textures/bradley6-removebg-preview.png" width="300" height="227" />
+    </div>
+  </div>
+</body>
+</html>
+
+<script type="module">
+    const videoElement = document.getElementsByClassName('input_video')[0];
+    const canvasElement = document.getElementsByClassName('output_canvas')[0];
+    const canvasCtx = canvasElement.getContext('2d');
+    const image1 = document.getElementById("source1");
+    const image2 = document.getElementById("source2");
+    let loaded = 0;
+    image1.addEventListener("load", (e) => {
+      loaded++;
+    });
+    image2.addEventListener("load", (e) => {
+      loaded++;
+    });
+    
+    function onResults(results) {
+      canvasCtx.save();
+      canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+      canvasCtx.drawImage(
+          results.image, 0, 0, canvasElement.width, canvasElement.height);
+      if (results.multiHandLandmarks) {
+        for (const landmarks of results.multiHandLandmarks) {
+          // drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS,
+                         //{color: '#00FF00', lineWidth: 5});
+          // drawLandmarks(canvasCtx, landmarks, {color: '#FF0000', lineWidth: 2});
+          // draw Bradley
+          //window.alert(landmarks[12].x);
+          let topX = landmarks[8].x * 1280;
+          let topY = landmarks[8].y * 720;
+          let bottomY = landmarks[4].y * 720;
+          let mid = Math.round((topY + bottomY) / 2);
+          let diff = bottomY - topY;
+          if(loaded == 2) {
+            if(diff > 50) {
+              canvasCtx.drawImage(image1, 20, 15, 600, 1000, Math.floor(landmarks[8].x * 1280), mid, 350, 600);
+            } else {
+              canvasCtx.drawImage(image2, 20, 15, 600, 1000, Math.floor(landmarks[8].x * 1280), mid, 350, 600);
+            } 
+          }
+          
+        }
+        
+      }
+      canvasCtx.restore();
+    }
+    
+    const hands = new Hands({locateFile: (file) => {
+      return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+    }});
+    hands.setOptions({
+      maxNumHands: 2,
+      modelComplexity: 1,
+      minDetectionConfidence: 0.5,
+      minTrackingConfidence: 0.5
+    });
+    hands.onResults(onResults);
+    
+    const camera = new Camera(videoElement, {
+      onFrame: async () => {
+        await hands.send({image: videoElement});
+      },
+      width: 1280,
+      height: 720
+    });
+    camera.start();
+</script>
