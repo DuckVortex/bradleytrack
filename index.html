@@ -51,11 +51,15 @@
           let bottomY = landmarks[4].y * 720;
           let mid = Math.round((topY + bottomY) / 2);
           let diff = bottomY - topY;
+          let offset = -150;
+          if(landmarks[20].x > landmarks[8].x) {
+            offset = -50;
+          }
           if(loaded == 2) {
             if(diff > 50) {
-              canvasCtx.drawImage(image1, 20, 15, 600, 1000, Math.floor(landmarks[8].x * 1280), mid, 350, 600);
+              canvasCtx.drawImage(image1, 20, 10, 350, 600, Math.floor(landmarks[8].x * 1280) + offset, mid - 50, 280, 480);
             } else {
-              canvasCtx.drawImage(image2, 20, 15, 600, 1000, Math.floor(landmarks[8].x * 1280), mid, 350, 600);
+              canvasCtx.drawImage(image2, 20, 10, 350, 600, Math.floor(landmarks[8].x * 1280) + offset, mid - 50, 280, 480);
             } 
           }
           
