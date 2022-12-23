@@ -13,26 +13,80 @@
     <video class="input_video" style="display:none;"></video>
     <canvas class="output_canvas" width="1280px" height="720px"></canvas>
     <div style="display:none;">
-      <img id="source1" src="https://raw.githubusercontent.com/Mike1795/BabylonStuff/main/textures/bradley.png" width="300" height="227" />
-      <img id="source2" src="https://raw.githubusercontent.com/Mike1795/BabylonStuff/main/textures/bradley6-removebg-preview.png" width="300" height="227" />
     </div>
   </div>
 </body>
 </html>
 
 <script type="module">
+    let loaded = 0;
     const videoElement = document.getElementsByClassName('input_video')[0];
     const canvasElement = document.getElementsByClassName('output_canvas')[0];
     const canvasCtx = canvasElement.getContext('2d');
-    const image1 = document.getElementById("source1");
-    const image2 = document.getElementById("source2");
-    let loaded = 0;
-    image1.addEventListener("load", (e) => {
-      loaded++;
+    // const image1 = document.getElementById("source1");
+    // image1.addEventListener("load", (e) => {
+    //   loaded++;
+    // });
+    // const image2 = document.getElementById("source2");
+    // image2.addEventListener("load", (e) => {
+    //   loaded++;
+    // });
+    // const image3 = document.getElementById("source3");
+    // image3.addEventListener("load", (e) => {
+    //   loaded++;
+    // });
+    // const image4 = document.getElementById("source4");
+    // image4.addEventListener("load", (e) => {
+    //   loaded++;
+    // });
+    // const image5 = document.getElementById("source5");
+    // image5.addEventListener("load", (e) => {
+    //   loaded++;
+    // });
+    // const image6 = document.getElementById("source6");
+    // image6.addEventListener("load", (e) => {
+    //   loaded++;
+    // });
+
+const imageUrls = [
+  "https://raw.githubusercontent.com/Mike1795/BabylonStuff/main/textures/bradley.png",
+  "https://raw.githubusercontent.com/Mike1795/BabylonStuff/main/textures/bradley2-removebg-preview.png",
+  "https://raw.githubusercontent.com/Mike1795/BabylonStuff/main/textures/bradley3-removebg-preview.png",
+  "https://raw.githubusercontent.com/Mike1795/BabylonStuff/main/textures/bradley4-removebg-preview.png",
+  "https://raw.githubusercontent.com/Mike1795/BabylonStuff/main/textures/bradley5-removebg-preview.png",
+  "https://raw.githubusercontent.com/Mike1795/BabylonStuff/main/textures/bradley6-removebg-preview.png",
+];
+
+const images = [];
+
+// imageUrls.map returns Promise array (because callback function is async), 
+// which is immediately passed to Promise.all which accumulates them into one
+// promise which will be resolved when all its elements will finish.
+Promise.all(
+  imageUrls.map(async (imageUrls, i) => {
+    const tmpImage = new Image();
+    
+    // Create synchronization promise
+    const syncPromise = new Promise((resolve) => {
+    
+      tmpImage.onload = (e) => {
+        // Handle loaded image
+        console.log("Finished loading image: ", i);
+        
+        // Don't forget to resolve syncPromise
+        resolve(); 
+      };
+      
+      tmpImage.src = imageUrls;
+      images.push(tmpImage);
     });
-    image2.addEventListener("load", (e) => {
-      loaded++;
-    });
+    
+    // Wait for syncPromise (image loaded)
+    await syncPromise;
+  })
+).then(() => {
+  console.log("Finished loading all images");
+});
     
     function onResults(results) {
       canvasCtx.save();
@@ -45,7 +99,6 @@
                          //{color: '#00FF00', lineWidth: 5});
           // drawLandmarks(canvasCtx, landmarks, {color: '#FF0000', lineWidth: 2});
           // draw Bradley
-          //window.alert(landmarks[12].x);
           let topX = landmarks[8].x * 1280;
           let topY = landmarks[8].y * 720;
           let bottomY = landmarks[4].y * 720;
@@ -55,12 +108,16 @@
           if(landmarks[20].x > landmarks[8].x) {
             offset = -50;
           }
-          if(loaded == 2) {
-            if(diff > 50) {
-              canvasCtx.drawImage(image1, 20, 10, 350, 600, Math.floor(landmarks[8].x * 1280) + offset, mid - 50, 280, 480);
-            } else {
-              canvasCtx.drawImage(image2, 20, 10, 350, 600, Math.floor(landmarks[8].x * 1280) + offset, mid - 50, 280, 480);
-            } 
+          if(diff > 70) {
+            canvasCtx.drawImage(images[0], 20, 10, 350, 600, Math.floor(landmarks[8].x * 1280) + offset, mid - 50, 280, 480);
+          } else if (diff > 60) {
+            canvasCtx.drawImage(images[1], 20, 10, 350, 600, Math.floor(landmarks[8].x * 1280) + offset, mid - 50, 280, 480);
+          } else if (diff > 50) {
+            canvasCtx.drawImage(images[2], 20, 10, 350, 600, Math.floor(landmarks[8].x * 1280) + offset, mid - 50, 280, 480);
+          } else if (diff > 40) {
+            canvasCtx.drawImage(images[3], 20, 10, 350, 600, Math.floor(landmarks[8].x * 1280) + offset, mid - 50, 280, 480);
+          } else {
+            canvasCtx.drawImage(images[4], 20, 10, 350, 600, Math.floor(landmarks[8].x * 1280) + offset, mid - 50, 280, 480);
           }
           
         }
